@@ -34,18 +34,22 @@ jobs:
       env:
         DOCKER_USER: ${{ secrets.USER_DOCKER }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
-        NEW_VERSION: ${{ steps.version.outputs.version }}
-
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
 
-    # - name: Build docker image
-    #   run: |
-    #     docker build -t edgarjoaquin1102/docker-astro:0.0.2 .
+    - name: Build docker image
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker build -t edgarjoaquin1102/docker-astro:$NEW_VERSION .
+        docker build -t edgarjoaquin1102/docker-astro:latest .
 
-    # - name: Push to docker hub
-    #   run: |
-    #     docker push edgarjoaquin1102/docker-astro:0.0.2
+    - name: Push to docker hub
+      env:
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+      run: |
+        docker push edgarjoaquin1102/docker-astro:$NEW_VERSION
+        docker push edgarjoaquin1102/docker-astro:latest
 
     # - name: Build the Docker image
     #   run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
