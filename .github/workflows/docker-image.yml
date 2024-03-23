@@ -15,24 +15,38 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    
+
+    - name: Git Semantic Version
+      uses: PaulHatch/semantic-version@v4.0.3
+      with:
+        # The prefix to use to identify tags
+        tag_prefix: "v"
+        # A string which, if present in a git commit, indicates that a change represents a
+        # major (breaking) change, supports regular expressions wrapped with '/'
+        major_pattern: "(major)"
+        # Same as above except indicating a minor change, supports regular expressions wrapped with '/'
+        minor_pattern: "(feat)"
+        # A string to determine the format of the version output
+        format: "${major}.${minor}.${patch}-prerelease${increment}"
+      id: version
+
     - name: Docker login
       env:
         DOCKER_USER: ${{ secrets.USER_DOCKER }}
         DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
+        NEW_VERSION: ${{ steps.version.outputs.version }}
+
       run: |
         docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
-    
-    - name: Build docker image
-      run: |
-        docker build -t edgarjoaquin1102/docker-astro:0.0.2 .
 
-    - name: Push to docker hub
-      run: |
-        docker push edgarjoaquin1102/docker-astro:0.0.2
+    # - name: Build docker image
+    #   run: |
+    #     docker build -t edgarjoaquin1102/docker-astro:0.0.2 .
 
+    # - name: Push to docker hub
+    #   run: |
+    #     docker push edgarjoaquin1102/docker-astro:0.0.2
 
-    
     # - name: Build the Docker image
     #   run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
-    
+
