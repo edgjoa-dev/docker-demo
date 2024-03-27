@@ -1,20 +1,27 @@
-# Usa una imagen de Node.js como base
-FROM node:20
-
-# Establece el directorio de trabajo dentro del contenedor
+# Etapa de construcción (build)
+FROM node:20 AS build
 WORKDIR /app
-
-# Copia los archivos de tu aplicación al contenedor
+COPY package.json .
+RUN yarn --frozen-lockfile
 COPY . .
-
-# Instala las dependencias utilizando Yarn
-RUN yarn install
-
-# Construye la aplicación
 RUN yarn build
 
-# Expone el puerto en el que se ejecuta la aplicación
-EXPOSE 3000
+# Etapa de producción (prod-deps)
+FROM node:20 AS prod-deps
+WORKDIR /app
+COPY package.json .
+RUN yarn --production
 
-# Comando para iniciar la aplicación cuando se ejecute el contenedor
+# Etapa de desarrollo (dev-deps)
+FROM node:20 AS dev-deps
+WORKDIR /app
+COPY package.json .
+RUN yarn install --frozen-lockfile
+
+# Etapa de ejecución (runner)
+FROM node:20 AS runner
+WORKDIR /app
+COPY --from=build /app .
+COPY --from=prod-deps /app/node_modules ./node_modules
+EXPOSE 3000
 CMD ["yarn", "dev"]
